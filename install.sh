@@ -1,23 +1,16 @@
 #!/bin/bash
 set -e
 
-EMAIL="ostwalarinjay1@gmail.com"
-USERNAME="Arinjay01"
-FIRSTNAME="Arinjay"
-LASTNAME="Ostwal"
-PASSWORD="Arinjay@001"
-FQDN="panel.gtxnodes.xyz"
-TIMEZONE="Asia/Kolkata"
+export email="ostwalarinjay1@gmail.com"
+export user_email="ostwalarinjay1@gmail.com"
+export user_username="Arinjay01"
+export user_firstname="Arinjay"
+export user_lastname="Ostwal"
+export user_password="Arinjay@001"
 
-curl -Lo /tmp/ptero-installer.sh https://raw.githubusercontent.com/pterodactyl-installer/pterodactyl-installer/master/installers/panel.sh
+export FQDN="panel.gtxnodes.xyz"
+export timezone="Asia/Kolkata"
+export CONFIGURE_LETSENCRYPT="true"
+export CONFIGURE_FIREWALL="true"
 
-bash /tmp/ptero-installer.sh \
-  --email "$EMAIL" \
-  --username "$USERNAME" \
-  --firstname "$FIRSTNAME" \
-  --lastname "$LASTNAME" \
-  --password "$PASSWORD" \
-  --fqdn "$FQDN" \
-  --timezone "$TIMEZONE" \
-  --agree-terms \
-  --no-interaction
+curl -sSL https://raw.githubusercontent.com/pterodactyl-installer/pterodactyl-installer/master/install.sh | bash -s -- 0
