@@ -2,11 +2,11 @@
 set -e
 
 PANEL_DOMAIN="panel.gtxnodes.xyz"
-ADMIN_EMAIL="ostwalarinjay1@gmail.com"
-ADMIN_USER="Arinjay01"
-ADMIN_FIRST="Arinjay"
-ADMIN_LAST="Ostwal"
-ADMIN_PASS="Arinjay@001"
+ADMIN_EMAIL="admin@gmail.com"
+ADMIN_USER="admin"
+ADMIN_FIRST="admin"
+ADMIN_LAST="admin"
+ADMIN_PASS="Admin@001"
 TIMEZONE="Asia/Kolkata"
 
 DB_NAME="panel"
