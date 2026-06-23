@@ -1,13 +1,23 @@
 #!/bin/bash
+set -e
 
-echo "GTX Nodes Auto Installer"
+EMAIL="ostwalarinjay1@gmail.com"
+USERNAME="Arinjay01"
+FIRSTNAME="Arinjay"
+LASTNAME="Ostwal"
+PASSWORD="Arinjay@001"
+FQDN="panel.gtxnodes.xyz"
+TIMEZONE="Asia/Kolkata"
 
-export email="ostwalarinjay1@gmail.com"
-export username="Arinjay01"
-export firstname="Arinjay"
-export lastname="Ostwal"
-export password="Arinjay@001"
-export FQDN="panel.gtxnodes.xyz"
-export timezone="Asia/Kolkata"
+curl -Lo /tmp/ptero-installer.sh https://raw.githubusercontent.com/pterodactyl-installer/pterodactyl-installer/master/installers/panel.sh
 
-bash <(curl -s https://pterodactyl-installer.se)
+bash /tmp/ptero-installer.sh \
+  --email "$EMAIL" \
+  --username "$USERNAME" \
+  --firstname "$FIRSTNAME" \
+  --lastname "$LASTNAME" \
+  --password "$PASSWORD" \
+  --fqdn "$FQDN" \
+  --timezone "$TIMEZONE" \
+  --agree-terms \
+  --no-interaction
