@@ -1,22 +1,13 @@
 #!/bin/bash
 
-echo "================================="
-echo "GTX Nodes Installer"
-echo "================================="
+echo "GTX Nodes Auto Installer"
 
-EMAIL="ostwalarinjay1@gmail.com"
-USERNAME="Arinjay01"
-FIRSTNAME="Arinjay"
-LASTNAME="Ostwal"
-FQDN="panel.gtxnodes.xyz"
-
-echo "Installing Pterodactyl Panel..."
+export email="ostwalarinjay1@gmail.com"
+export username="Arinjay01"
+export firstname="Arinjay"
+export lastname="Ostwal"
+export password="Arinjay@001"
+export FQDN="panel.gtxnodes.xyz"
+export timezone="Asia/Kolkata"
 
 bash <(curl -s https://pterodactyl-installer.se)
-
-echo "================================="
-echo "Installation Finished"
-echo "Domain: $FQDN"
-echo "Email: $EMAIL"
-echo "Username: $USERNAME"
-echo "================================="
