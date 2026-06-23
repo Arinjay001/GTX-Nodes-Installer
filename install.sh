@@ -13,15 +13,22 @@ DB_NAME="panel"
 DB_USER="pterodactyl"
 DB_PASS="$(openssl rand -base64 32)"
 
+echo "================================="
+echo "GTX Nodes Panel Auto Installer"
+echo "================================="
+
 apt update && apt upgrade -y
-apt install -y software-properties-common curl apt-transport-https ca-certificates gnupg unzip tar git nginx mariadb-server redis-server certbot python3-certbot-nginx
+apt install -y software-properties-common curl apt-transport-https ca-certificates gnupg unzip tar git nginx mariadb-server redis-server certbot python3-certbot-nginx ufw
 
 add-apt-repository -y ppa:ondrej/php
 apt update
-apt install -y php8.3 php8.3-cli php8.3-gd php8.3-mysql php8.3-mbstring php8.3-bcmath php8.3-xml php8.3-curl php8.3-zip php8.3-fpm php8.3-intl
+apt install -y php8.3 php8.3-cli php8.3-gd php8.3-mysql php8.3-mbstring php8.3-bcmath php8.3-xml php8.3-curl php8.3-zip php8.3-fpm php8.3-intl php8.3-redis
 
 curl -sS https://getcomposer.org/installer | php
-mv composer.phar /usr/local/bin/composer
+mv -f composer.phar /usr/local/bin/composer
+
+systemctl enable --now mariadb
+systemctl enable --now redis-server
 
 mysql -u root <<MYSQL
 CREATE USER IF NOT EXISTS '${DB_USER}'@'127.0.0.1' IDENTIFIED BY '${DB_PASS}';
@@ -35,9 +42,11 @@ cd /var/www/pterodactyl
 
 curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/download/panel.tar.gz
 tar -xzvf panel.tar.gz
+
 chmod -R 755 storage/* bootstrap/cache/
 
-cp .env.example .env
+cp -f .env.example .env
+
 composer install --no-dev --optimize-autoloader --no-interaction
 
 php artisan key:generate --force
@@ -69,9 +78,10 @@ php artisan p:user:make \
   --name-last="$ADMIN_LAST" \
   --password="$ADMIN_PASS" \
   --admin=1 \
-  --no-interaction
+  --no-interaction || true
 
-chown -R www-data:www-data /var/www/pterodactyl/*
+chown -R www-data:www-data /var/www/pterodactyl
+chmod -R 755 storage bootstrap/cache
 
 cat > /etc/systemd/system/pteroq.service <<EOF
 [Unit]
@@ -100,7 +110,6 @@ server {
 
     client_max_body_size 100m;
     client_body_timeout 120s;
-
     sendfile off;
 
     location / {
@@ -132,15 +141,45 @@ EOF
 rm -f /etc/nginx/sites-enabled/default
 ln -sf /etc/nginx/sites-available/pterodactyl.conf /etc/nginx/sites-enabled/pterodactyl.conf
 
-systemctl enable --now redis-server
+systemctl daemon-reload
 systemctl enable --now php8.3-fpm
+systemctl enable --now nginx
 systemctl enable --now pteroq
 
 nginx -t
+systemctl restart php8.3-fpm
 systemctl restart nginx
+systemctl restart pteroq
+
+echo "Applying GTX Nodes panel fixes and optimizations..."
+
+cd /var/www/pterodactyl
+
+php artisan optimize:clear
+php artisan migrate --seed --force
+php artisan queue:restart
+
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan optimize
+
+chown -R www-data:www-data /var/www/pterodactyl
+chmod -R 755 storage bootstrap/cache
+
+sed -i 's/^pm.max_children.*/pm.max_children = 80/' /etc/php/8.3/fpm/pool.d/www.conf || true
+sed -i 's/^pm.start_servers.*/pm.start_servers = 10/' /etc/php/8.3/fpm/pool.d/www.conf || true
+sed -i 's/^pm.min_spare_servers.*/pm.min_spare_servers = 10/' /etc/php/8.3/fpm/pool.d/www.conf || true
+sed -i 's/^pm.max_spare_servers.*/pm.max_spare_servers = 25/' /etc/php/8.3/fpm/pool.d/www.conf || true
+
+ufw allow 80/tcp || true
+ufw allow 443/tcp || true
+ufw allow 22/tcp || true
 
 certbot --nginx -d "$PANEL_DOMAIN" --non-interactive --agree-tos -m "$ADMIN_EMAIL" || true
 
+systemctl restart redis-server
+systemctl restart php8.3-fpm
 systemctl restart nginx
 systemctl restart pteroq
 
@@ -150,5 +189,7 @@ echo "URL: https://$PANEL_DOMAIN"
 echo "Email: $ADMIN_EMAIL"
 echo "Username: $ADMIN_USER"
 echo "Password: $ADMIN_PASS"
+echo "Database: $DB_NAME"
+echo "Database user: $DB_USER"
 echo "Database password: $DB_PASS"
 echo "================================="
