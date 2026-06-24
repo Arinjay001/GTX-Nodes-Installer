@@ -1,7 +1,12 @@
 #!/bin/bash
 set -e
 
-PANEL_DOMAIN="panel.gtxnodes.xyz"
+echo "================================="
+echo "GTX Nodes Panel Auto Installer"
+echo "================================="
+
+read -p "Enter Panel Domain (example: panel.example.com): " PANEL_DOMAIN
+
 ADMIN_EMAIL="admin@gmail.com"
 ADMIN_USER="admin"
 ADMIN_FIRST="admin"
@@ -12,10 +17,6 @@ TIMEZONE="Asia/Kolkata"
 DB_NAME="panel"
 DB_USER="pterodactyl"
 DB_PASS="$(openssl rand -base64 32)"
-
-echo "================================="
-echo "GTX Nodes Panel Auto Installer"
-echo "================================="
 
 apt update && apt upgrade -y
 apt install -y software-properties-common curl apt-transport-https ca-certificates gnupg unzip tar git nginx mariadb-server redis-server certbot python3-certbot-nginx ufw
@@ -44,7 +45,6 @@ curl -Lo panel.tar.gz https://github.com/pterodactyl/panel/releases/latest/downl
 tar -xzvf panel.tar.gz
 
 chmod -R 755 storage/* bootstrap/cache/
-
 cp -f .env.example .env
 
 composer install --no-dev --optimize-autoloader --no-interaction
